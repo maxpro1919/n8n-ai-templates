@@ -1,0 +1,192 @@
+{
+  "name": "AI Customer Support Bot (Pro)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "support",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Support Request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "operation": "complete",
+        "model": "claude-sonnet-4-20250514",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a customer support agent for a small business. Analyze the customer message and output JSON:\n{\"intent\": \"question|complaint|refund|order_status|other\",\n\"sentiment\": \"positive|neutral|negative|angry\",\n\"urgency\": \"low|medium|high|critical\",\n\"can_auto_resolve\": true|false,\n\"draft_reply\": \"your reply here\",\n\"internal_note\": \"note for the team\"}\n\nRules:\n- Be warm, professional, empathetic\n- If complaint/angry: apologize first, then solve\n- If refund request: process it (don't argue)\n- If you can solve it: set can_auto_resolve=true\n- If complex: set can_auto_resolve=false, explain what team needs to do\n- Always match the customer's language"
+            },
+            {
+              "role": "user",
+              "content": "=Customer message:\nName: {{ $json.body.name }}\nEmail: {{ $json.body.email }}\nOrder #: {{ $json.body.order_number }}\nMessage: {{ $json.body.message }}"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 800
+        }
+      },
+      "id": "ai-analyze",
+      "name": "AI Analyze & Draft",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ JSON.parse($json.message.content[0].text).can_auto_resolve }}",
+              "operation": "equals",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "id": "can-auto-resolve",
+      "name": "Can Auto Resolve?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "support@yourbusiness.com",
+        "toEmail": "={{ $('Support Request').item.json.body.email }}",
+        "subject": "=Re: {{ $('Support Request').item.json.body.subject || 'Your support request' }}",
+        "message": "={{ JSON.parse($('AI Analyze & Draft').item.json.message.content[0].text).draft_reply }}",
+        "options": {}
+      },
+      "id": "auto-reply",
+      "name": "Auto Reply",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "fromEmail": "support@yourbusiness.com",
+        "toEmail": "team@yourbusiness.com",
+        "subject": "=⚠️ Support ticket needs human review: {{ $('Support Request').item.json.body.name }}",
+        "message": "=<h2>Support Ticket — Needs Review</h2><p><strong>Customer:</strong> {{ $('Support Request').item.json.body.name }} ({{ $('Support Request').item.json.body.email }})</p><p><strong>Order #:</strong> {{ $('Support Request').item.json.body.order_number }}</p><p><strong>Message:</strong> {{ $('Support Request').item.json.body.message }}</p><hr><p><strong>Intent:</strong> {{ JSON.parse($('AI Analyze & Draft').item.json.message.content[0].text).intent }}</p><p><strong>Sentiment:</strong> {{ JSON.parse($('AI Analyze & Draft').item.json.message.content[0].text).sentiment }}</p><p><strong>Urgency:</strong> {{ JSON.parse($('AI Analyze & Draft').item.json.message.content[0].text).urgency }}</p><p><strong>AI Draft Reply:</strong></p><blockquote>{{ JSON.parse($('AI Analyze & Draft').item.json.message.content[0].text).draft_reply }}</blockquote><p><strong>Internal Note:</strong> {{ JSON.parse($('AI Analyze & Draft').item.json.message.content[0].text).internal_note }}</p>",
+        "options": {}
+      },
+      "id": "escalate",
+      "name": "Escalate to Team",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [900, 400]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": "YOUR_GOOGLE_SHEET_ID",
+        "sheetName": "Support Log",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now.toISO() }}",
+            "Customer": "={{ $('Support Request').item.json.body.name }}",
+            "Email": "={{ $('Support Request').item.json.body.email }}",
+            "Intent": "={{ JSON.parse($('AI Analyze & Draft').item.json.message.content[0].text).intent }}",
+            "Sentiment": "={{ JSON.parse($('AI Analyze & Draft').item.json.message.content[0].text).sentiment }}",
+            "Auto Resolved": "={{ JSON.parse($('AI Analyze & Draft').item.json.message.content[0].text).can_auto_resolve }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "log",
+      "name": "Log to Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Support Request": {
+      "main": [
+        [
+          {
+            "node": "AI Analyze & Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Analyze & Draft": {
+      "main": [
+        [
+          {
+            "node": "Can Auto Resolve?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Can Auto Resolve?": {
+      "main": [
+        [
+          {
+            "node": "Auto Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Escalate to Team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto Reply": {
+      "main": [
+        [
+          {
+            "node": "Log to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Escalate to Team": {
+      "main": [
+        [
+          {
+            "node": "Log to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "AI"
+    },
+    {
+      "name": "Support"
+    },
+    {
+      "name": "Pro"
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+{
+  "name": "Lead Capture + AI Scoring",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-capture",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "operation": "complete",
+        "model": "claude-sonnet-4-20250514",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a lead scoring assistant. Analyze the lead information and output a JSON with: {\"score\": 1-10, \"priority\": \"high/medium/low\", \"reason\": \"brief explanation\", \"next_action\": \"suggested next step\"}. Score based on: urgency, budget signals, fit with business. Output ONLY valid JSON."
+            },
+            {
+              "role": "user",
+              "content": "=New lead submission:\nName: {{ $json.body.name }}\nEmail: {{ $json.body.email }}\nCompany: {{ $json.body.company }}\nMessage: {{ $json.body.message }}\nSource: {{ $json.body.source }}"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 200
+        }
+      },
+      "id": "ai-score",
+      "name": "AI Score Lead",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ JSON.parse($json.message.content[0].text).priority }}",
+              "operation": "equals",
+              "value2": "high"
+            }
+          ]
+        }
+      },
+      "id": "filter-high",
+      "name": "Filter High Priority",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 1,
+      "position": [680, 200]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": "YOUR_GOOGLE_SHEET_ID",
+        "sheetName": "Leads",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $('Webhook Trigger').item.json.body.name }}",
+            "Email": "={{ $('Webhook Trigger').item.json.body.email }}",
+            "Company": "={{ $('Webhook Trigger').item.json.body.company }}",
+            "Score": "={{ JSON.parse($json.message.content[0].text).score }}",
+            "Priority": "={{ JSON.parse($json.message.content[0].text).priority }}",
+            "Next Action": "={{ JSON.parse($json.message.content[0].text).next_action }}",
+            "Date": "={{ $now.toISO() }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "save-sheet",
+      "name": "Save to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "YOUR_EMAIL@gmail.com",
+        "toEmail": "YOUR_EMAIL@gmail.com",
+        "subject": "=🔥 High Priority Lead: {{ $('Webhook Trigger').item.json.body.name }} (Score: {{ JSON.parse($json.message.content[0].text).score }}/10)",
+        "message": "=<h2>New High Priority Lead</h2><p><strong>Name:</strong> {{ $('Webhook Trigger').item.json.body.name }}</p><p><strong>Email:</strong> {{ $('Webhook Trigger').item.json.body.email }}</p><p><strong>Company:</strong> {{ $('Webhook Trigger').item.json.body.company }}</p><p><strong>Message:</strong> {{ $('Webhook Trigger').item.json.body.message }}</p><hr><p><strong>AI Score:</strong> {{ JSON.parse($json.message.content[0].text).score }}/10</p><p><strong>Reason:</strong> {{ JSON.parse($json.message.content[0].text).reason }}</p><p><strong>Suggested Action:</strong> {{ JSON.parse($json.message.content[0].text).next_action }}</p>",
+        "options": {}
+      },
+      "id": "notify-email",
+      "name": "Notify via Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [900, 100]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Score Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Score Lead": {
+      "main": [
+        [
+          {
+            "node": "Save to Google Sheets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Filter High Priority",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter High Priority": {
+      "main": [
+        [
+          {
+            "node": "Notify via Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "AI"
+    },
+    {
+      "name": "Lead"
+    },
+    {
+      "name": "Sales"
+    }
+  ]
+}

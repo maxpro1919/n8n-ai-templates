@@ -1,0 +1,154 @@
+{
+  "name": "DeepSeek Email Auto-Responder Demo",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "subject",
+              "name": "subject",
+              "value": "Question about your AI automation service",
+              "type": "string"
+            },
+            {
+              "id": "from",
+              "name": "from",
+              "value": "john@example.com",
+              "type": "string"
+            },
+            {
+              "id": "snippet",
+              "name": "snippet",
+              "value": "Hi, I saw your n8n templates on GitHub and I'm interested in setting up AI-powered email automation for my small business. Can you help me understand the pricing and what's involved? Thanks!",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "sample-email",
+      "name": "Sample Email Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.deepseek.com/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer sk-7c4cefddd85b4c5e9698f637a5b1e8c5"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"deepseek-chat\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a professional email assistant. Draft a concise, friendly reply to the following email. Match the sender's language. Keep it under 150 words. Be helpful and specific.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Subject: {{ $json.subject }}\\n\\nFrom: {{ $json.from }}\\n\\nBody:\\n{{ $json.snippet }}\"\n    }\n  ],\n  \"max_tokens\": 500\n}",
+        "options": {}
+      },
+      "id": "deepseek-call",
+      "name": "DeepSeek Draft Reply",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "originalSubject",
+              "name": "originalSubject",
+              "value": "={{ $('Sample Email Data').item.json.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "originalFrom",
+              "name": "originalFrom",
+              "value": "={{ $('Sample Email Data').item.json.from }}",
+              "type": "string"
+            },
+            {
+              "id": "aiReply",
+              "name": "aiReply",
+              "value": "={{ $json.choices[0].message.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "extract-reply",
+      "name": "Extract AI Reply",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [900, 300]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Sample Email Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sample Email Data": {
+      "main": [
+        [
+          {
+            "node": "DeepSeek Draft Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Draft Reply": {
+      "main": [
+        [
+          {
+            "node": "Extract AI Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "AI"
+    },
+    {
+      "name": "DeepSeek"
+    },
+    {
+      "name": "Demo"
+    }
+  ]
+}

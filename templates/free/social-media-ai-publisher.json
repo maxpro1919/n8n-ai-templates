@@ -1,0 +1,117 @@
+{
+  "name": "Social Media AI Publisher",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hour": 9
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Daily Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "operation": "complete",
+        "model": "claude-sonnet-4-20250514",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a social media content creator. Generate ONE short, engaging post for a small business. Keep it under 200 characters. Include 2-3 relevant hashtags. Vary the tone: sometimes educational, sometimes behind-the-scenes, sometimes a tip. Output ONLY the post text, nothing else."
+            },
+            {
+              "role": "user",
+              "content": "Generate today's social media post for a small business that sells handmade candles. Make it conversational and authentic."
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 200
+        }
+      },
+      "id": "generate-post",
+      "name": "Generate Post",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "status": "={{ $json.message.content[0].text }}",
+        "additionalFields": {}
+      },
+      "id": "post-twitter",
+      "name": "Post to X/Twitter",
+      "type": "n8n-nodes-base.twitter",
+      "typeVersion": 1,
+      "position": [680, 200]
+    },
+    {
+      "parameters": {
+        "resource": "post",
+        "operation": "create",
+        "message": "={{ $('Generate Post').item.json.message.content[0].text }}",
+        "additionalFields": {}
+      },
+      "id": "post-linkedin",
+      "name": "Post to LinkedIn",
+      "type": "n8n-nodes-base.linkedIn",
+      "typeVersion": 1,
+      "position": [680, 400]
+    }
+  ],
+  "connections": {
+    "Daily Schedule": {
+      "main": [
+        [
+          {
+            "node": "Generate Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Post": {
+      "main": [
+        [
+          {
+            "node": "Post to X/Twitter",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Post to LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "AI"
+    },
+    {
+      "name": "Social Media"
+    },
+    {
+      "name": "Content"
+    }
+  ]
+}
