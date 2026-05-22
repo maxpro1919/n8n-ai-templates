@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+:root {
+  --primary: #2563eb;
+  --primary-light: #3b82f6;
+}
+
+body {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 标签颜色 */
+.tag-资源 { background: #dbeafe; color: #1d4ed8; }
+.tag-通知 { background: #fef3c7; color: #b45309; }
+.tag-经验 { background: #d1fae5; color: #047857; }
+.tag-吐槽 { background: #fce7f3; color: #be185d; }
+.tag-其他 { background: #f3f4f6; color: #4b5563; }
+
+/* Toast 动画 */
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.toast-enter { animation: slideUp 0.3s ease-out; }

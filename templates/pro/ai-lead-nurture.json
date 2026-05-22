@@ -1,0 +1,221 @@
+{
+  "name": "AI Lead Nurture Sequence (Pro)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "New Lead",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "operation": "complete",
+        "model": "claude-sonnet-4-20250514",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a sales qualification expert. Analyze the lead and output JSON:\n{\n  \"score\": 1-10,\n  \"tier\": \"hot|warm|cold\",\n  \"reasoning\": \"why this score\",\n  \"personalization\": {\n    \"pain_point\": \"their likely main pain point\",\n    \"value_prop\": \"what we offer that matches\",\n    \"social_proof\": \"type of proof that would convince them\"\n  },\n  \"email_1_subject\": \"subject for first email (day 0)\",\n  \"email_1_body\": \"first email body, 150 words max, casual and helpful\",\n  \"email_2_subject\": \"subject for second email (day 3)\",\n  \"email_2_body\": \"second email body, 150 words max, provide value\",\n  \"email_3_subject\": \"subject for third email (day 7)\",\n  \"email_3_body\": \"third email body, 150 words max, clear CTA\"\n}\n\nScoring guide:\n- 8-10 (hot): ready to buy, has budget, clear need\n- 5-7 (warm): interested but needs nurturing\n- 1-4 (cold): early stage, just exploring\n\nRules:\n- Emails should feel personal, not salesy\n- Each email provides value before asking\n- Match the lead's language\n- Reference their specific situation"
+            },
+            {
+              "role": "user",
+              "content": "=Qualify this lead and create a nurture sequence:\n\nName: {{ $json.body.name }}\nEmail: {{ $json.body.email }}\nCompany: {{ $json.body.company || 'Unknown' }}\nSource: {{ $json.body.source || 'Unknown' }}\nMessage: {{ $json.body.message }}\nBudget: {{ $json.body.budget || 'Not specified' }}\nTimeline: {{ $json.body.timeline || 'Not specified' }}"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 2000
+        }
+      },
+      "id": "ai-qualify",
+      "name": "AI Qualify Lead",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": "YOUR_GOOGLE_SHEET_ID",
+        "sheetName": "Leads",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now.toISO() }}",
+            "Name": "={{ $('New Lead').item.json.body.name }}",
+            "Email": "={{ $('New Lead').item.json.body.email }}",
+            "Company": "={{ $('New Lead').item.json.body.company }}",
+            "Score": "={{ JSON.parse($json.message.content[0].text).score }}",
+            "Tier": "={{ JSON.parse($json.message.content[0].text).tier }}",
+            "Pain Point": "={{ JSON.parse($json.message.content[0].text).personalization.pain_point }}",
+            "Source": "={{ $('New Lead').item.json.body.source }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "log-lead",
+      "name": "Log Lead",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [680, 200]
+    },
+    {
+      "parameters": {
+        "fromEmail": "hello@yourbusiness.com",
+        "toEmail": "={{ $('New Lead').item.json.body.email }}",
+        "subject": "={{ JSON.parse($('AI Qualify Lead').item.json.message.content[0].text).email_1_subject }}",
+        "message": "={{ JSON.parse($('AI Qualify Lead').item.json.message.content[0].text).email_1_body }}",
+        "options": {}
+      },
+      "id": "email-1",
+      "name": "Send Email 1 (Now)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [680, 400]
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "days"
+      },
+      "id": "wait-3-days",
+      "name": "Wait 3 Days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [900, 400]
+    },
+    {
+      "parameters": {
+        "fromEmail": "hello@yourbusiness.com",
+        "toEmail": "={{ $('New Lead').item.json.body.email }}",
+        "subject": "={{ JSON.parse($('AI Qualify Lead').item.json.message.content[0].text).email_2_subject }}",
+        "message": "={{ JSON.parse($('AI Qualify Lead').item.json.message.content[0].text).email_2_body }}",
+        "options": {}
+      },
+      "id": "email-2",
+      "name": "Send Email 2 (Day 3)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [1120, 400]
+    },
+    {
+      "parameters": {
+        "amount": 4,
+        "unit": "days"
+      },
+      "id": "wait-4-days",
+      "name": "Wait 4 Days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1340, 400]
+    },
+    {
+      "parameters": {
+        "fromEmail": "hello@yourbusiness.com",
+        "toEmail": "={{ $('New Lead').item.json.body.email }}",
+        "subject": "={{ JSON.parse($('AI Qualify Lead').item.json.message.content[0].text).email_3_subject }}",
+        "message": "={{ JSON.parse($('AI Qualify Lead').item.json.message.content[0].text).email_3_body }}",
+        "options": {}
+      },
+      "id": "email-3",
+      "name": "Send Email 3 (Day 7)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [1560, 400]
+    }
+  ],
+  "connections": {
+    "New Lead": {
+      "main": [
+        [
+          {
+            "node": "AI Qualify Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Qualify Lead": {
+      "main": [
+        [
+          {
+            "node": "Log Lead",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Email 1 (Now)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email 1 (Now)": {
+      "main": [
+        [
+          {
+            "node": "Wait 3 Days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 3 Days": {
+      "main": [
+        [
+          {
+            "node": "Send Email 2 (Day 3)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email 2 (Day 3)": {
+      "main": [
+        [
+          {
+            "node": "Wait 4 Days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 4 Days": {
+      "main": [
+        [
+          {
+            "node": "Send Email 3 (Day 7)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "AI"
+    },
+    {
+      "name": "Sales"
+    },
+    {
+      "name": "Pro"
+    }
+  ]
+}

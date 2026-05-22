@@ -1,0 +1,179 @@
+{
+  "name": "AI Invoice Processor (Pro)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "invoice",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Invoice Received",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "operation": "complete",
+        "model": "claude-sonnet-4-20250514",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are an accounting assistant. Parse the invoice data and output JSON:\n{\n  \"vendor\": \"company or person name\",\n  \"invoice_number\": \"INV-XXX or null\",\n  \"date\": \"YYYY-MM-DD\",\n  \"due_date\": \"YYYY-MM-DD or null\",\n  \"line_items\": [\n    {\"description\": \"...\", \"quantity\": 1, \"unit_price\": 0.00, \"total\": 0.00}\n  ],\n  \"subtotal\": 0.00,\n  \"tax\": 0.00,\n  \"total\": 0.00,\n  \"currency\": \"USD\",\n  \"category\": \"office_supplies|software|services|travel|meals|equipment|other\",\n  \"payment_method\": \"bank_transfer|credit_card|paypal|check|other|null\",\n  \"notes\": \"any important notes or anomalies\"\n}\n\nBe precise with numbers. If info is missing, use null."
+            },
+            {
+              "role": "user",
+              "content": "=Parse this invoice:\n\nFrom: {{ $json.body.vendor }}\nInvoice #: {{ $json.body.invoice_number }}\nDate: {{ $json.body.date }}\nItems:\n{{ $json.body.items_text }}\n\nTotal: {{ $json.body.total }}\nNotes: {{ $json.body.notes }}"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 800
+        }
+      },
+      "id": "ai-parse",
+      "name": "AI Parse Invoice",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": "YOUR_GOOGLE_SHEET_ID",
+        "sheetName": "Invoices",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ JSON.parse($json.message.content[0].text).date }}",
+            "Vendor": "={{ JSON.parse($json.message.content[0].text).vendor }}",
+            "Invoice #": "={{ JSON.parse($json.message.content[0].text).invoice_number }}",
+            "Category": "={{ JSON.parse($json.message.content[0].text).category }}",
+            "Subtotal": "={{ JSON.parse($json.message.content[0].text).subtotal }}",
+            "Tax": "={{ JSON.parse($json.message.content[0].text).tax }}",
+            "Total": "={{ JSON.parse($json.message.content[0].text).total }}",
+            "Currency": "={{ JSON.parse($json.message.content[0].text).currency }}",
+            "Due Date": "={{ JSON.parse($json.message.content[0].text).due_date }}",
+            "Notes": "={{ JSON.parse($json.message.content[0].text).notes }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "log-sheet",
+      "name": "Log to Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [680, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ JSON.parse($('AI Parse Invoice').item.json.message.content[0].text).total }}",
+              "operation": "largerEqual",
+              "value2": 1000
+            }
+          ]
+        }
+      },
+      "id": "high-value-check",
+      "name": "High Value?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [680, 400]
+    },
+    {
+      "parameters": {
+        "fromEmail": "finance@yourbusiness.com",
+        "toEmail": "team@yourbusiness.com",
+        "subject": "=High-value invoice alert: {{ JSON.parse($('AI Parse Invoice').item.json.message.content[0].text).vendor }} — ${{ JSON.parse($('AI Parse Invoice').item.json.message.content[0].text).total }}",
+        "message": "=<h2>High-Value Invoice Detected</h2><p><strong>Vendor:</strong> {{ JSON.parse($('AI Parse Invoice').item.json.message.content[0].text).vendor }}</p><p><strong>Invoice #:</strong> {{ JSON.parse($('AI Parse Invoice').item.json.message.content[0].text).invoice_number }}</p><p><strong>Total:</strong> ${{ JSON.parse($('AI Parse Invoice').item.json.message.content[0].text).total }} {{ JSON.parse($('AI Parse Invoice').item.json.message.content[0].text).currency }}</p><p><strong>Category:</strong> {{ JSON.parse($('AI Parse Invoice').item.json.message.content[0].text).category }}</p><p><strong>Due Date:</strong> {{ JSON.parse($('AI Parse Invoice').item.json.message.content[0].text).due_date }}</p><hr><p><strong>AI Notes:</strong> {{ JSON.parse($('AI Parse Invoice').item.json.message.content[0].text).notes }}</p><p>Please review and approve before payment.</p>",
+        "options": {}
+      },
+      "id": "alert-team",
+      "name": "Alert Team",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "finance@yourbusiness.com",
+        "toEmail": "={{ $('Invoice Received').item.json.body.submitted_by }}",
+        "subject": "=Invoice received: {{ JSON.parse($('AI Parse Invoice').item.json.message.content[0].text).vendor }} — ${{ JSON.parse($('AI Parse Invoice').item.json.message.content[0].text).total }}",
+        "message": "=Hi,<br><br>We've received and logged the invoice from <strong>{{ JSON.parse($('AI Parse Invoice').item.json.message.content[0].text).vendor }}</strong> for <strong>${{ JSON.parse($('AI Parse Invoice').item.json.message.content[0].text).total }}</strong>.<br><br>Category: {{ JSON.parse($('AI Parse Invoice').item.json.message.content[0].text).category }}<br>Due date: {{ JSON.parse($('AI Parse Invoice').item.json.message.content[0].text).due_date || 'Not specified' }}<br><br>It's been added to our tracking sheet. We'll process it according to our payment schedule.<br><br>Best,<br>Finance Team",
+        "options": {}
+      },
+      "id": "confirm-receipt",
+      "name": "Confirm Receipt",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [900, 500]
+    }
+  ],
+  "connections": {
+    "Invoice Received": {
+      "main": [
+        [
+          {
+            "node": "AI Parse Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Parse Invoice": {
+      "main": [
+        [
+          {
+            "node": "Log to Sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "High Value?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "High Value?": {
+      "main": [
+        [
+          {
+            "node": "Alert Team",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Confirm Receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "AI"
+    },
+    {
+      "name": "Finance"
+    },
+    {
+      "name": "Pro"
+    }
+  ]
+}

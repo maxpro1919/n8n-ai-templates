@@ -1,0 +1,162 @@
+{
+  "name": "AI Content Repurposer (Pro)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "repurpose",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Content Input",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "operation": "complete",
+        "model": "claude-sonnet-4-20250514",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a content strategist. Repurpose the given content into 4 formats. Output JSON:\n{\n  \"twitter_thread\": [\n    \"Tweet 1 (hook, max 280 chars)\",\n    \"Tweet 2 (point 1)\",\n    \"Tweet 3 (point 2)\",\n    \"Tweet 4 (point 3)\",\n    \"Tweet 5 (CTA)\"\n  ],\n  \"linkedin_post\": \"Professional post, 1200-1500 chars, with line breaks and hashtags\",\n  \"newsletter\": \"Email format with subject line, intro, 3 key takeaways, CTA. 300-500 words.\",\n  \"instagram_caption\": \"Casual tone, 2200 chars max, include 10-15 hashtags at the end\"\n}\n\nRules:\n- Each format should feel native to its platform\n- Twitter: punchy, numbered, end with CTA\n- LinkedIn: professional but personal, use line breaks\n- Newsletter: educational, structured, valuable\n- Instagram: conversational, emoji-friendly, hashtag-heavy\n- Preserve the core message across all formats\n- Match the source language"
+            },
+            {
+              "role": "user",
+              "content": "=Repurpose this content:\n\nTitle: {{ $json.body.title }}\n\nContent:\n{{ $json.body.content }}\n\nTarget audience: {{ $json.body.audience || 'general' }}\nTone: {{ $json.body.tone || 'professional' }}"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 2000
+        }
+      },
+      "id": "ai-repurpose",
+      "name": "AI Repurpose",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "twitter",
+              "name": "twitter_thread",
+              "value": "={{ JSON.parse($json.message.content[0].text).twitter_thread }}",
+              "type": "string"
+            },
+            {
+              "id": "linkedin",
+              "name": "linkedin_post",
+              "value": "={{ JSON.parse($json.message.content[0].text).linkedin_post }}",
+              "type": "string"
+            },
+            {
+              "id": "newsletter",
+              "name": "newsletter",
+              "value": "={{ JSON.parse($json.message.content[0].text).newsletter }}",
+              "type": "string"
+            },
+            {
+              "id": "instagram",
+              "name": "instagram_caption",
+              "value": "={{ JSON.parse($json.message.content[0].text).instagram_caption }}",
+              "type": "string"
+            },
+            {
+              "id": "title",
+              "name": "original_title",
+              "value": "={{ $('Content Input').item.json.body.title }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "extract-formats",
+      "name": "Extract All Formats",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": "YOUR_GOOGLE_SHEET_ID",
+        "sheetName": "Content Queue",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now.toISO() }}",
+            "Title": "={{ $json.original_title }}",
+            "Twitter": "={{ $json.twitter_thread }}",
+            "LinkedIn": "={{ $json.linkedin_post }}",
+            "Newsletter": "={{ $json.newsletter }}",
+            "Instagram": "={{ $json.instagram_caption }}",
+            "Status": "Draft"
+          }
+        },
+        "options": {}
+      },
+      "id": "save-sheet",
+      "name": "Save to Content Queue",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [900, 300]
+    }
+  ],
+  "connections": {
+    "Content Input": {
+      "main": [
+        [
+          {
+            "node": "AI Repurpose",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Repurpose": {
+      "main": [
+        [
+          {
+            "node": "Extract All Formats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract All Formats": {
+      "main": [
+        [
+          {
+            "node": "Save to Content Queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "AI"
+    },
+    {
+      "name": "Content"
+    },
+    {
+      "name": "Pro"
+    }
+  ]
+}

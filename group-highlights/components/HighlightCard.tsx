@@ -1,0 +1,38 @@
+import { Highlight } from "@/lib/supabase";
+
+function timeAgo(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "刚刚";
+  if (mins < 60) return `${mins}分钟前`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}小时前`;
+  const days = Math.floor(hours / 24);
+  return `${days}天前`;
+}
+
+export default function HighlightCard({ item }: { item: Highlight }) {
+  return (
+    <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 active:bg-gray-50 transition-colors">
+      <div className="flex items-center gap-2 mb-2">
+        <span className={`tag-${item.tag} text-xs font-medium px-2.5 py-0.5 rounded-full`}>
+          {item.tag}
+        </span>
+        {item.source && (
+          <span className="text-xs text-gray-400 truncate">{item.source}</span>
+        )}
+      </div>
+      <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap break-words">
+        {item.content}
+      </p>
+      {item.note && (
+        <p className="text-xs text-gray-500 mt-2 italic">{item.note}</p>
+      )}
+      <div className="flex items-center gap-1 mt-3 text-xs text-gray-400">
+        {item.submitted_by && <span>{item.submitted_by}</span>}
+        {item.submitted_by && <span>·</span>}
+        <span>{timeAgo(item.created_at)}</span>
+      </div>
+    </div>
+  );
+}

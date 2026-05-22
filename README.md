@@ -2,6 +2,8 @@
 
 > Ready-to-use AI workflows for small businesses. Import, configure, save hours every week.
 
+![Demo](docs/demo.gif)
+
 ## What's Inside
 
 ### Free Templates (this repo)
@@ -11,15 +13,18 @@
 | [AI Email Auto-Responder](templates/free/ai-email-auto-responder.json) | Auto-reply to customer emails with AI | 2-3 hrs/day |
 | [Social Media AI Publisher](templates/free/social-media-ai-publisher.json) | Generate & publish daily posts automatically | 1-2 hrs/day |
 | [Lead Capture + AI Scoring](templates/free/lead-capture-ai-scoring.json) | Score incoming leads 1-10, notify on hot ones | 3-5 hrs/week |
+| [DeepSeek Email Demo](templates/free/deepseek-email-demo.json) | Same as Email Auto-Responder, uses DeepSeek API | — |
 
-### Pro Templates ($49) — [Get on Gumroad](https://your-gumroad-link)
+### Pro Templates ($29)
 
-- **AI Customer Support Bot** — handles 80% of support tickets
-- **Invoice Generator + Follow-up** — auto-create invoices, chase late payments
-- **Meeting Summary Bot** — transcribe + summarize + send action items
-- **Competitor Monitor** — track competitor pricing, product changes
-- **Content Repurpose Engine** — blog post → Twitter thread → LinkedIn post → email newsletter
-- 15+ more templates...
+| Template | What it does |
+|----------|-------------|
+| **AI Customer Support Bot** | Webhook receives ticket → AI classifies intent/sentiment/urgency → auto-reply or escalate to team → log to Google Sheets |
+| **AI Invoice Processor** | Webhook receives invoice → AI extracts vendor/amount/category → logs to Sheets → alerts team on high-value invoices |
+| **AI Content Repurposer** | Input one article → AI generates Twitter thread + LinkedIn post + Newsletter + Instagram caption → saves to content queue |
+| **AI Lead Nurture Sequence** | New lead comes in → AI scores 1-10 → auto-sends 3-email nurture sequence (Day 0, 3, 7) → logs lead to Sheets |
+
+*Available soon. Star this repo to get notified.*
 
 ## Quick Start (5 minutes)
 
@@ -69,13 +74,12 @@
 
 ## Pricing
 
-| | Free | Pro ($49) |
+| | Free | Pro ($29) |
 |---|---|---|
-| Templates | 3 | 18+ |
+| Templates | 4 | 4 advanced workflows |
 | Updates | ✅ | ✅ |
-| Support | Community | Email + Discord |
-| Video tutorials | ❌ | ✅ |
-| Customization guide | ❌ | ✅ |
+| Support | Community | Email |
+| Setup guide | ✅ | ✅ |
 
 ## Contributing
 
@@ -91,6 +95,4 @@ MIT — use freely for personal and commercial projects.
 
 ---
 
-**Questions?** Open an issue or reach out on [Reddit](https://reddit.com/u/your-username) / [Twitter](https://twitter.com/your-handle)
-
-**Want custom automation?** [Book a call](https://your-booking-link) — I'll build it for you.
+**Questions?** Open an issue — I'll respond within a day.

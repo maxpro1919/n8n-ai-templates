@@ -2,82 +2,76 @@
 
 ## Post 1: r/smallbusiness (Share free templates)
 
-**Title**: I made free AI automation templates for small businesses — no coding needed
+**Title**: I built some n8n automation templates for my business — sharing them free
 
 **Body**:
 ```
-I've been playing around with n8n (free automation tool, like Zapier but self-hosted) and built some AI workflows that actually save me time. Figured I'd share.
+I run a small business and got tired of answering the same emails every morning. Tried Zapier but it's expensive and the AI features are locked behind enterprise plans.
 
-What's included (all free):
+So I built my own with n8n (free, open-source) + Claude API. Then I kept going and made a few more.
 
-1. **AI Email Auto-Responder** — reads incoming emails, drafts a reply, sends it. Handles customer questions automatically. You can customize the AI's tone and knowledge.
+Here's what's in the repo:
 
-2. **Social Media AI Publisher** — generates a post every morning and publishes to Twitter + LinkedIn. You feed it your business info and it creates relevant content.
+- Email auto-responder — reads incoming customer emails, drafts a reply, sends it. You can set the tone and give it your business knowledge.
+- Social media publisher — generates a post every morning and publishes to Twitter + LinkedIn.
+- Lead scoring — someone fills out your contact form, AI scores them 1-10, you get an email when it's a hot lead.
 
-3. **Lead Capture + AI Scoring** — when someone fills out your contact form, AI scores them 1-10 based on how likely they are to buy. High-priority leads get an instant email notification.
+All free, import directly into n8n. Setup takes maybe 5 minutes if you already have n8n running.
 
-All templates are import-ready for n8n. Takes about 5 minutes to set up.
+GitHub: https://github.com/maxpro1919/n8n-ai-templates
 
-[GitHub repo link]
+I'm not selling anything (there's a paid pack too but the free ones work fine on their own). Just figured someone else might find these useful.
 
-No catch, no email signup. Just wanted to share since these have been saving me 2-3 hours a day.
-
-Happy to answer questions about setting any of these up.
+If you try one and get stuck, drop a comment, I'll help.
 ```
 
 ---
 
 ## Post 2: r/forhire (Offer services)
 
-**Title**: [For Hire] I'll set up AI automation for your small business — $200
+**Title**: [For Hire] I'll build AI automation for your business — $200
 
 **Body**:
 ```
-I build AI-powered automation workflows for small businesses using n8n + Claude.
+I build AI automation workflows using n8n + Claude. Not ChatGPT wrappers — actual workflows that run on their own.
 
-What I can set up for you:
-- AI email auto-responder (handles customer inquiries 24/7)
+What I can set up:
+- AI email auto-responder (handles customer questions 24/7)
 - Automated social media posting (daily content, multiple platforms)
-- Lead scoring system (AI ranks your leads, notifies you on hot ones)
-- Customer support bot (handles 80% of tickets, escalates complex ones)
-- Custom workflow (tell me your pain point, I'll build it)
+- Lead scoring (AI ranks your leads, tells you who to follow up with first)
+- Customer support bot (handles routine tickets, escalates the hard ones)
+- Custom workflow (tell me what's eating your time, I'll build something)
 
 Price: $200 for a complete setup + 1 week of support.
 
-I use Claude AI (not ChatGPT) — it handles multiple languages well and writes more naturally.
+Timeline: 2-3 days.
 
-Timeline: 2-3 days from kickoff to live.
-
-DM me if interested. Happy to do a quick call to discuss your needs.
+DM me if you want to talk through your situation first. No pressure.
 ```
 
 ---
 
 ## Post 3: r/ChatGPTPro or r/AItools (Share knowledge)
 
-**Title**: How I automated my small business with AI — templates inside
+**Title**: How I stopped answering the same emails every day (n8n + Claude)
 
 **Body**:
 ```
-Been experimenting with AI automation for my small business and wanted to share what's actually working.
+I was spending 2-3 hours a day on repetitive stuff — answering customer emails, posting on social media, sorting through leads. Classic small business problem.
 
-Tools I use:
-- n8n (free, self-hosted automation)
-- Claude API (for the AI brain)
-- Gmail/Google Sheets (for data)
+Tried a few things. Zapier was too expensive for what I needed. ChatGPT plugins were hit or miss. Ended up building my own with n8n and Claude API.
 
-What I automated:
-1. Email responses — AI reads incoming emails, drafts replies, sends them. I review maybe 10% that need human touch. Saved 2-3 hours/day.
+What actually works for me:
 
-2. Social media — AI generates daily posts based on my business. Not perfect, but 80% good enough. I just tweak occasionally.
+1. Email auto-responder — AI reads the email, drafts a reply, sends it. I review maybe 10% that need a human touch. The rest just go out.
 
-3. Lead scoring — when someone fills out my contact form, AI gives them a score and tells me who to follow up with first.
+2. Social media — AI generates daily posts. Not perfect, but 80% good enough. I tweak when I have time.
 
-The templates are on GitHub if you want to try them: [link]
+3. Lead scoring — contact form submissions get scored 1-10. I stopped wasting time on tire-kickers.
 
-Key lesson: Don't try to automate everything at once. Start with the task you hate most.
+The templates are on GitHub if you want to try them: https://github.com/maxpro1919/n8n-ai-templates
 
-Happy to answer questions.
+Biggest lesson: start with the one task you hate most. Don't try to automate everything at once.
 ```
 
 ---
