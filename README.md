@@ -24,7 +24,7 @@
 | **AI Content Repurposer** | Input one article → AI generates Twitter thread + LinkedIn post + Newsletter + Instagram caption → saves to content queue |
 | **AI Lead Nurture Sequence** | New lead comes in → AI scores 1-10 → auto-sends 3-email nurture sequence (Day 0, 3, 7) → logs lead to Sheets |
 
-*Available soon. Star this repo to get notified.*
+📧 **Get Pro templates**: Email [xinshidai2049@qq.com](mailto:xinshidai2049@qq.com) — includes all 4 Pro templates + setup guide. Pay securely via credit card.
 
 ## Quick Start (5 minutes)
 
@@ -80,6 +80,8 @@
 | Updates | ✅ | ✅ |
 | Support | Community | Email |
 | Setup guide | ✅ | ✅ |
+
+**Get Pro**: Email [xinshidai2049@qq.com](mailto:xinshidai2049@qq.com) to purchase. Pay with credit card, templates delivered via email.
 
 ## Contributing
 

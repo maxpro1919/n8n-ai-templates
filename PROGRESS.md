@@ -13,6 +13,8 @@
 - [x] group-highlights Next.js 展示站
 - [x] Payoneer 账户审批通过
 - [x] PayPal 绑卡成功（银联卡）
+- [x] Payoneer 银行卡绑定确认，Request Payment 功能就绪
+- [x] GitHub README 加 Pro 购买方式（邮箱 xinshidai2049@qq.com）
 
 ## 支付方案（最终）
 跳过所有第三方 Store（LemonSqueezy/Gumroad 对中国卖家门槛太高），走最简路径：
@@ -22,9 +24,8 @@ GitHub README 写 "Pro版 $29 邮件联系" → 用户发邮件 → Payoneer Req
 卖出 5 单之后再考虑自动交付。
 
 ## 下一步
-1. 更新 GitHub README，加 Pro 版购买方式（邮箱 + 一句话）
-2. Reddit r/smallbusiness 发帖引流（文案已写好）
-3. 自媒体：6 张图文卡片已生成（exports/douyin-cards/），发抖音+小红书第一条
+1. 引流平台选择：Reddit 易封号需养号，考虑 Hacker News / Indie Hackers / Twitter
+2. 自媒体：6 张图文卡片已生成（exports/douyin-cards/），发抖音+小红书第一条
 
 ## 文件结构
 ```
