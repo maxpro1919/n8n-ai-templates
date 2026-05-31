@@ -83,6 +83,18 @@
 
 **Get Pro**: Email [xinshidai2049@qq.com](mailto:xinshidai2049@qq.com) or visit [my Fiverr gig](https://www.fiverr.com/s/7YPoGxk) to purchase.
 
+## Also In This Repo: 群精华板 (Group Highlights v2)
+
+微信群聊记录 → AI 分类排序 → 飞书文档，完整全栈应用。
+
+- 微信 .txt 聊天记录批量上传，正则解析消息头
+- DeepSeek API 按人/按话题智能分类，保留完整原文
+- 一键生成飞书在线文档（@larksuiteoapi/node-sdk）
+- 邀请码权限分级（管理员/成员），移动端优先
+- Next.js 16 + TypeScript + Tailwind CSS + Supabase
+
+详见 [`group-highlights/`](group-highlights/)
+
 ## Contributing
 
 Found a bug? Want to add a template? PRs welcome!
