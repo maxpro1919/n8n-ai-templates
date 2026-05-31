@@ -13,4 +13,8 @@ export interface Highlight {
   note: string | null;
   submitted_by: string | null;
   created_at: string;
+  sender_name: string | null;
+  raw_timestamp: string | null;
+  source_type: string | null; // 'mark' or 'batch'
+  uploaded_by: string | null;
 }

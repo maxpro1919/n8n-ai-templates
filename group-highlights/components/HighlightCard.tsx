@@ -21,6 +21,9 @@ export default function HighlightCard({ item }: { item: Highlight }) {
         {item.source && (
           <span className="text-xs text-gray-400 truncate">{item.source}</span>
         )}
+        {item.source_type === "batch" && (
+          <span className="text-xs text-gray-300">批量</span>
+        )}
       </div>
       <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap break-words">
         {item.content}
@@ -29,8 +32,19 @@ export default function HighlightCard({ item }: { item: Highlight }) {
         <p className="text-xs text-gray-500 mt-2 italic">{item.note}</p>
       )}
       <div className="flex items-center gap-1 mt-3 text-xs text-gray-400">
-        {item.submitted_by && <span>{item.submitted_by}</span>}
-        {item.submitted_by && <span>·</span>}
+        {item.sender_name && (
+          <>
+            <span className="font-medium text-gray-500">{item.sender_name}</span>
+            {item.raw_timestamp && <span>({item.raw_timestamp.slice(5, 16)})</span>}
+            <span>·</span>
+          </>
+        )}
+        {item.submitted_by && !item.sender_name && (
+          <>
+            <span>{item.submitted_by}</span>
+            <span>·</span>
+          </>
+        )}
         <span>{timeAgo(item.created_at)}</span>
       </div>
     </div>

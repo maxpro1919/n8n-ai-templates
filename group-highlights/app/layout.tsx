@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { AuthProvider } from "@/lib/auth-context";
+import AuthGate from "@/components/AuthGate";
 
 export const metadata: Metadata = {
   title: "群精华板 — 群里好东西，别丢了",
@@ -20,7 +22,9 @@ export default function RootLayout({
   return (
     <html lang="zh-CN" className="h-full">
       <body className="min-h-full bg-gray-50 text-gray-900 antialiased">
-        {children}
+        <AuthProvider>
+          <AuthGate>{children}</AuthGate>
+        </AuthProvider>
       </body>
     </html>
   );

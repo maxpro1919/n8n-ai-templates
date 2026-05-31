@@ -3,15 +3,18 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase, Highlight } from "@/lib/supabase";
+import { useAuth } from "@/lib/auth-context";
 import HighlightCard from "@/components/HighlightCard";
 import SearchBar from "@/components/SearchBar";
 import TagFilter from "@/components/TagFilter";
 
 export default function Home() {
+  const { role, logout } = useAuth();
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [search, setSearch] = useState("");
   const [tag, setTag] = useState("全部");
   const [loading, setLoading] = useState(true);
+  const [showMenu, setShowMenu] = useState(false);
 
   useEffect(() => {
     fetchHighlights();
@@ -34,7 +37,8 @@ export default function Home() {
     const matchSearch =
       !search ||
       item.content.toLowerCase().includes(search.toLowerCase()) ||
-      (item.source && item.source.toLowerCase().includes(search.toLowerCase()));
+      (item.source && item.source.toLowerCase().includes(search.toLowerCase())) ||
+      (item.sender_name && item.sender_name.toLowerCase().includes(search.toLowerCase()));
     return matchTag && matchSearch;
   });
 
@@ -62,7 +66,7 @@ export default function Home() {
         ) : filtered.length === 0 ? (
           <div className="text-center py-12 text-gray-400 text-sm">
             {highlights.length === 0
-              ? "还没有精华，点击右下角添加第一条"
+              ? "还没有精华，点击右下角添加"
               : "没有找到匹配的内容"}
           </div>
         ) : (
@@ -74,13 +78,53 @@ export default function Home() {
         )}
       </main>
 
+      {/* FAB Menu */}
+      {showMenu && (
+        <div
+          className="fixed inset-0 z-20"
+          onClick={() => setShowMenu(false)}
+        >
+          <div className="fixed bottom-24 right-6 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+            <Link
+              href="/upload"
+              className="block px-5 py-3 text-sm hover:bg-gray-50 active:bg-gray-100"
+              onClick={() => setShowMenu(false)}
+            >
+              📄 上传聊天记录
+            </Link>
+            <Link
+              href="/mark"
+              className="block px-5 py-3 text-sm hover:bg-gray-50 active:bg-gray-100 border-t border-gray-50"
+              onClick={() => setShowMenu(false)}
+            >
+              ✏️ 标记单条消息
+            </Link>
+            {role === "admin" && (
+              <Link
+                href="/generate"
+                className="block px-5 py-3 text-sm hover:bg-gray-50 active:bg-gray-100 border-t border-gray-50"
+                onClick={() => setShowMenu(false)}
+              >
+                📋 生成飞书文档
+              </Link>
+            )}
+            <button
+              onClick={() => { logout(); setShowMenu(false); }}
+              className="block w-full text-left px-5 py-3 text-sm text-gray-400 hover:bg-gray-50 border-t border-gray-50"
+            >
+              退出
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* FAB */}
-      <Link
-        href="/submit"
-        className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center text-2xl font-light active:bg-blue-700 transition-colors"
+      <button
+        onClick={() => setShowMenu(!showMenu)}
+        className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center text-2xl font-light active:bg-blue-700 transition-colors z-30"
       >
-        +
-      </Link>
+        {showMenu ? "×" : "+"}
+      </button>
     </div>
   );
 }
