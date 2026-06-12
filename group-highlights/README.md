@@ -50,4 +50,8 @@ npm run dev
 
 https://group-highlights.vercel.app/
 
+## 截图
+
+![screenshot](public/screenshot.png)
+
 ## 非技术背景，独立完成
